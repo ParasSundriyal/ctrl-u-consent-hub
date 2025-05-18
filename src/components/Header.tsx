@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -12,21 +11,24 @@ import {
   DropdownMenuTrigger,
 } from "@radix-ui/react-dropdown-menu";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Header = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isLoggedIn, user, logout } = useAuth();
   const location = useLocation();
   
   // Determine if we're on the landing page
   const isLandingPage = location.pathname === "/";
   
-  // Simulate logout
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    toast({
-      title: "Logged Out",
-      description: "You have been successfully logged out.",
-    });
+  // Get user initials for avatar
+  const getUserInitials = () => {
+    if (!user?.name) return "U";
+    return user.name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
   };
   
   return (
@@ -57,12 +59,14 @@ const Header = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative rounded-full h-8 w-8 p-0">
                     <Avatar>
-                      <AvatarFallback>U</AvatarFallback>
+                      <AvatarFallback>{getUserInitials()}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 bg-card border rounded-md shadow-md p-2">
-                  <DropdownMenuLabel className="px-2 py-1.5">My Account</DropdownMenuLabel>
+                  <DropdownMenuLabel className="px-2 py-1.5">
+                    {user?.name || 'My Account'}
+                  </DropdownMenuLabel>
                   <DropdownMenuSeparator className="my-1 h-px bg-muted" />
                   <DropdownMenuItem className="flex cursor-pointer items-center px-2 py-1.5 rounded-sm text-sm hover:bg-accent">
                     <Link to="/dashboard" className="flex w-full">Dashboard</Link>
@@ -73,7 +77,7 @@ const Header = () => {
                   <DropdownMenuSeparator className="my-1 h-px bg-muted" />
                   <DropdownMenuItem 
                     className="flex cursor-pointer items-center px-2 py-1.5 rounded-sm text-sm hover:bg-accent"
-                    onClick={handleLogout}
+                    onClick={logout}
                   >
                     Logout
                   </DropdownMenuItem>
